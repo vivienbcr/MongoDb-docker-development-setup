@@ -1,0 +1,37 @@
+version: "3.2"
+
+services:
+  mongo_db:
+    hostname: mongo_db
+    image: mongo
+    ports:
+      - "27017-27019:27017-27019"
+    restart: always
+    volumes:
+      - ./mongoDb/database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      # Uncomment this line for permanent data
+      # - ./mongoDb/database/mongo-volume:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: myDatabase
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: azertyqsd
+
+  # Seed mongo from json data
+  mongo-seed:
+    depends_on:
+      - "mongo_db"
+    build: ./mongoDb/mongo-seed
+
+  # Mongo db management interface
+  mongo-express:
+    image: mongo-express
+    restart: always
+    depends_on:
+      - mongo_db
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: azertyqsd
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_SERVER: mongo_db
